@@ -105,6 +105,7 @@ class Inspector extends Component {
 			contentStyle,
 			backgroundType,
 			backgroundColor,
+			backgroundGradient,
 			backgroundImageURL,
 			backgroundImageID,
 			icon,
@@ -227,9 +228,7 @@ class Inspector extends Component {
 					{backgroundType === "gradient" && (
 						<PanelBody title={__("Gradient Colors")} initialOpen={false}>
 							<GradientColorController
-								colorOne="#36D1DC"
-								colorTwo="#5B86E5"
-								angle={45}
+                gradientColor={backgroundGradient }
 								onChange={(backgroundGradient) =>
 									setAttributes({ backgroundGradient })
 								}

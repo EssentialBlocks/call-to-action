@@ -4560,6 +4560,7 @@ var Inspector = /*#__PURE__*/function (_Component) {
           contentStyle = attributes.contentStyle,
           backgroundType = attributes.backgroundType,
           backgroundColor = attributes.backgroundColor,
+          backgroundGradient = attributes.backgroundGradient,
           backgroundImageURL = attributes.backgroundImageURL,
           backgroundImageID = attributes.backgroundImageID,
           icon = attributes.icon,
@@ -4671,9 +4672,7 @@ var Inspector = /*#__PURE__*/function (_Component) {
         title: Object(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__["__"])("Gradient Colors"),
         initialOpen: false
       }, /*#__PURE__*/React.createElement(_util_gradient_color_controller__WEBPACK_IMPORTED_MODULE_8__["default"], {
-        colorOne: "#36D1DC",
-        colorTwo: "#5B86E5",
-        angle: 45,
+        gradientColor: backgroundGradient,
         onChange: function onChange(backgroundGradient) {
           return setAttributes({
             backgroundGradient: backgroundGradient
