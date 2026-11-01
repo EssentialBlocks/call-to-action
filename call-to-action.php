@@ -47,40 +47,49 @@ function create_block_call_to_action_block_init() {
 		filemtime( "$dir/$style_css" )
 	);
 
-  $frontend_js = 'src/frontend.js';
-  wp_enqueue_script(
-    'essential-blocks-cta-frontend',
-    plugins_url($frontend_js, __FILE__),
-    array( "jquery","wp-editor"),
-    true
-  );
+	// Register only. WordPress prints a registered handle that is passed to
+	// register_block_type() on pages that contain the block (and in the editor),
+	// so visitors do not download these files on every page.
+	$frontend_js = 'src/frontend.js';
+	wp_register_script(
+		'essential-blocks-cta-frontend',
+		plugins_url( $frontend_js, __FILE__ ),
+		array( 'jquery' ),
+		filemtime( "$dir/$frontend_js" ),
+		true
+	);
 
 	$fontpicker_theme = 'src/css/fonticonpicker.base-theme.react.css';
-	wp_enqueue_style(
+	wp_register_style(
 		'fontpicker-default-theme',
-		plugins_url( $fontpicker_theme, __FILE__),
-		array()
+		plugins_url( $fontpicker_theme, __FILE__ ),
+		array(),
+		filemtime( "$dir/$fontpicker_theme" )
 	);
 
 	$fontpicker_material_theme = 'src/css/fonticonpicker.material-theme.react.css';
-	wp_enqueue_style(
+	wp_register_style(
 		'fontpicker-matetial-theme',
-		plugins_url( $fontpicker_material_theme, __FILE__),
-		array()
+		plugins_url( $fontpicker_material_theme, __FILE__ ),
+		array(),
+		filemtime( "$dir/$fontpicker_material_theme" )
 	);
 
 	$fontawesome_css = 'src/css/font-awesome5.css';
-	wp_enqueue_style(
+	wp_register_style(
 		'fontawesome-frontend-css',
-		plugins_url( $fontawesome_css, __FILE__),
-		array()
+		plugins_url( $fontawesome_css, __FILE__ ),
+		array(),
+		filemtime( "$dir/$fontawesome_css" )
 	);
 
 	if( ! WP_Block_Type_Registry::get_instance()->is_registered( 'essential-blocks/call-to-action' ) ) {
-    register_block_type( 'block/call-to-action-cta', array(
-      'editor_script' => 'create-block-call-to-action-block-editor',
-      'style'         => 'create-block-call-to-action-block',
-    ) );
-  }
+		register_block_type( 'block/call-to-action-cta', array(
+			'editor_script' => 'create-block-call-to-action-block-editor',
+			'editor_style'  => array( 'fontpicker-default-theme', 'fontpicker-matetial-theme' ),
+			'style'         => array( 'create-block-call-to-action-block', 'fontawesome-frontend-css' ),
+			'script'        => 'essential-blocks-cta-frontend',
+		) );
+	}
 }
 add_action( 'init', 'create_block_call_to_action_block_init' );
