@@ -3,6 +3,8 @@
  * Plugin Name:     Call To Action
  * Description:     Example block written with ESNext standard and JSX support – build step required.
  * Version:         0.1.0
+ * Requires at least: 6.0
+ * Requires PHP:    7.4
  * Author:          The WordPress Contributors
  * License:         GPL-2.0-or-later
  * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
@@ -18,6 +20,10 @@
  * @see https://developer.wordpress.org/block-editor/tutorials/block-tutorial/applying-styles-with-stylesheets/
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 require_once __DIR__ . '/includes/font-loader.php';
 require_once __DIR__ . '/includes/post-meta.php';
 
@@ -26,9 +32,15 @@ function create_block_call_to_action_block_init() {
 
 	$script_asset_path = "$dir/build/index.asset.php";
 	if ( ! file_exists( $script_asset_path ) ) {
-		throw new Error(
-			'You need to run `npm start` or `npm run build` for the "block/call-to-action-cta" block first.'
-		);
+		// An uncaught Error on `init` white-screens the whole site, so report
+		// the missing build in wp-admin and stop registering instead.
+		add_action( 'admin_notices', function () {
+			echo '<div class="notice notice-error"><p>' . esc_html__(
+				'Call To Action: the build files are missing. Run `npm run build` or reinstall the plugin.',
+				'call-to-action-cta'
+			) . '</p></div>';
+		} );
+		return;
 	}
 	$index_js     = 'build/index.js';
 	$script_asset = require( $script_asset_path );
