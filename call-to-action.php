@@ -3,6 +3,8 @@
  * Plugin Name:     Call To Action
  * Description:     Example block written with ESNext standard and JSX support – build step required.
  * Version:         0.1.0
+ * Requires at least: 6.0
+ * Requires PHP:    7.4
  * Author:          The WordPress Contributors
  * License:         GPL-2.0-or-later
  * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
@@ -18,6 +20,10 @@
  * @see https://developer.wordpress.org/block-editor/tutorials/block-tutorial/applying-styles-with-stylesheets/
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 require_once __DIR__ . '/includes/font-loader.php';
 require_once __DIR__ . '/includes/post-meta.php';
 
@@ -26,9 +32,15 @@ function create_block_call_to_action_block_init() {
 
 	$script_asset_path = "$dir/build/index.asset.php";
 	if ( ! file_exists( $script_asset_path ) ) {
-		throw new Error(
-			'You need to run `npm start` or `npm run build` for the "block/call-to-action-cta" block first.'
-		);
+		// An uncaught Error on `init` white-screens the whole site, so report
+		// the missing build in wp-admin and stop registering instead.
+		add_action( 'admin_notices', function () {
+			echo '<div class="notice notice-error"><p>' . esc_html__(
+				'Call To Action: the build files are missing. Run `npm run build` or reinstall the plugin.',
+				'call-to-action-cta'
+			) . '</p></div>';
+		} );
+		return;
 	}
 	$index_js     = 'build/index.js';
 	$script_asset = require( $script_asset_path );
@@ -47,40 +59,49 @@ function create_block_call_to_action_block_init() {
 		filemtime( "$dir/$style_css" )
 	);
 
-  $frontend_js = 'src/frontend.js';
-  wp_enqueue_script(
-    'essential-blocks-cta-frontend',
-    plugins_url($frontend_js, __FILE__),
-    array( "jquery","wp-editor"),
-    true
-  );
+	// Register only. WordPress prints a registered handle that is passed to
+	// register_block_type() on pages that contain the block (and in the editor),
+	// so visitors do not download these files on every page.
+	$frontend_js = 'src/frontend.js';
+	wp_register_script(
+		'essential-blocks-cta-frontend',
+		plugins_url( $frontend_js, __FILE__ ),
+		array( 'jquery' ),
+		filemtime( "$dir/$frontend_js" ),
+		true
+	);
 
 	$fontpicker_theme = 'src/css/fonticonpicker.base-theme.react.css';
-	wp_enqueue_style(
+	wp_register_style(
 		'fontpicker-default-theme',
-		plugins_url( $fontpicker_theme, __FILE__),
-		array()
+		plugins_url( $fontpicker_theme, __FILE__ ),
+		array(),
+		filemtime( "$dir/$fontpicker_theme" )
 	);
 
 	$fontpicker_material_theme = 'src/css/fonticonpicker.material-theme.react.css';
-	wp_enqueue_style(
+	wp_register_style(
 		'fontpicker-matetial-theme',
-		plugins_url( $fontpicker_material_theme, __FILE__),
-		array()
+		plugins_url( $fontpicker_material_theme, __FILE__ ),
+		array(),
+		filemtime( "$dir/$fontpicker_material_theme" )
 	);
 
 	$fontawesome_css = 'src/css/font-awesome5.css';
-	wp_enqueue_style(
+	wp_register_style(
 		'fontawesome-frontend-css',
-		plugins_url( $fontawesome_css, __FILE__),
-		array()
+		plugins_url( $fontawesome_css, __FILE__ ),
+		array(),
+		filemtime( "$dir/$fontawesome_css" )
 	);
 
 	if( ! WP_Block_Type_Registry::get_instance()->is_registered( 'essential-blocks/call-to-action' ) ) {
-    register_block_type( 'block/call-to-action-cta', array(
-      'editor_script' => 'create-block-call-to-action-block-editor',
-      'style'         => 'create-block-call-to-action-block',
-    ) );
-  }
+		register_block_type( 'block/call-to-action-cta', array(
+			'editor_script' => 'create-block-call-to-action-block-editor',
+			'editor_style'  => array( 'fontpicker-default-theme', 'fontpicker-matetial-theme' ),
+			'style'         => array( 'create-block-call-to-action-block', 'fontawesome-frontend-css' ),
+			'script'        => 'essential-blocks-cta-frontend',
+		) );
+	}
 }
 add_action( 'init', 'create_block_call_to_action_block_init' );
